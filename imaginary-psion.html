@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.1.min.js"></script>
+    <script type="text/javascript" src="moment.js"></script>
+
+    <script type="text/javascript">
+    
+var entryStarttime = null;
+var firstTimestamp = null;
+
+
+function isValidDate(d) {
+  if ( Object.prototype.toString.call(d) !== "[object Date]" )
+    return false;
+  return !isNaN(d.getTime());
+}
+
+$.fn.enterKey = function (fnc) {
+    return this.each(function () {
+        $(this).keypress(function (ev) {
+            var keycode = (ev.keyCode ? ev.keyCode : ev.which);
+            if (keycode == '13') {
+                fnc.call(this, ev);
+            }
+        })
+    })
+}
+
+$(document).ready( function(){
+  $("button#start").click( function() {
+    var timeStr = $("input#firsttimestamp").val();
+    firstTimestamp = moment(timeStr, "M/D/YY H:m:s");
+
+    if (firstTimestamp.isValid())
+    {
+        $(this).hide();
+        $("span#dateError").hide();
+        $("label#firsttimestamp").hide();
+        $("input#dataIn").show();
+        $("div#inputInstructions").show();
+        $("input#dataIn").focus();
+    }
+    else
+    {
+        $("span#dateError").show();
+    }
+  });
+
+
+  $("input#firsttimestamp").enterKey( function() {
+    $("button#start").click();
+  });
+
+  $("input#dataIn").enterKey( function(){
+    var line = $(this).val();
+    var timestamp = null;
+
+    // get time stamp
+    if (entryStarttime == null)
+    {
+      $("div#inputInstructions").hide();
+      entryStarttime = moment();
+      timestamp = firstTimestamp;
+    }
+    else
+    {
+      var timeDelta = moment().diff(entryStarttime, 'seconds');
+      timestamp = firstTimestamp.clone().add('seconds', timeDelta);
+    }
+
+    $("table#data").append("<tr><td></td><td>" + timestamp.format("M/D/YY H:mm:ss") + "</td><td>"+line+"</td></tr>");
+    $(this).val("");
+    window.scrollTo(0,document.body.scrollHeight);
+    $(this).focus();
+
+
+  });
+
+});
+    
+    </script>
+    <style type="text/css">
+      table#data td {
+        padding-right: 10px;
+      }
+      
+      table#data td:first-child {
+        padding-right: 0;
+      }
+
+      input#dataIn {
+        font-size: 18px;
+        padding: 3px;
+      }
+    </style>    
+    <title>Imaginary Psion</title>
+  </head>
+  <body>
+    <span style="font-size:42px; font-weight:bold;">
+      IMAGINARY PSION
+    </span>
+    <div>
+      This will hopefully be helpful for transcribing.  You enter the first timestamp, and then start transcribing.  This will automatically add timestamps for you.  When you're done, you can copy and paste the table into Excel. 
+    </div><br /><br />
+    
+    <table id="data"></table>
+
+    <span id="dateError" style="color:red; display:none;">I couldn't understand the date you entered!<br /></span>
+    <label id="firsttimestamp">First timestamp (M/D/YY H:MM:SS): <input id="firsttimestamp" /></label>
+    <button id="start">Start!</button>
+    <div id="inputInstructions" style="display:none">The timer will start once you type in the first line and press the enter key:</div>
+    <input id="dataIn" style="display:none;" />
+
+    <br /><br /><a href="javascript:location.reload()" style="color:black">Reset</a><br /><br />
+    
+  </body>
+</html>
+
